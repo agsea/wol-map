@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel='stylesheet' href='../assets/zTree/css/zTreeStyle/zTreeStyle.css'>
+    <link rel="stylesheet" href="../assets/ol-v4.1.1/ol.css">
+    <link rel="stylesheet" href="../build/css/wol-1.3.0.min.css">
+    <style>
+        body{
+            background-color: lightgray;
+        }
+        #mapContainer{
+            width: 100%;
+            height: 700px;
+            margin: 100px auto;
+            border: 1px solid grey;
+        }
+        #mapTree{
+            width: 300px;
+        }
+        .my-drone{
+            background-size: 70px !important;
+            background-position: -10px -10px !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="mapContainer" class="map" ondragover="DragHandler.allowDrop(event)">
+    </div>
+    <div>
+        <button onclick="turnOn()">开灯</button>
+        <button onclick="off()">关灯</button>
+        <button onclick="removeLayer()">删除遮罩</button>
+        <button onclick="panTo()">平移视图</button>
+        <button onclick="extentAt()">缩放视图</button>
+        <button onclick="locatePoint()">定位点动画</button>
+        <button onclick="locateLine()">定位线动画</button>
+        <button onclick="locateArea()">定位面动画</button>
+
+        <button onclick="getZoom()">获取缩放等级</button>
+        <button onclick="addWMSLayer()">添加WMS图层</button>
+
+        <button onclick="play()">播放轨迹</button>
+        <button onclick="pause()">暂停播放</button>
+        <button onclick="reset()">重置播放</button>
+        <button onclick="clearTrace()">清除轨迹</button>
+        <button onclick="initTrace()">初始化轨迹</button>
+        <button onclick="alterTraceIcon()">更改轨迹图标</button>
+
+        <button onclick="getLayerTree()">显示图层树</button>
+        <button onclick="addOneLayer()">添加图层</button>
+        <button onclick="removeOneLayer()">移除图层</button>
+    </div>
+    <div id="mapTree"></div>
+
+    <script src="../assets/jquery-3.2.0.min.js"></script>
+    <script src='../assets/zTree/js/jquery.ztree.core.js'></script>
+    <script src='../assets/zTree/js/jquery.ztree.excheck.js'></script>
+    <script src="../assets/ol-v4.1.1/ol.js"></script>
+    <script src="../build/js/wol-map-1.2.0.js"></script>
+    <!--<script src="../src/js/b1.js"></script>
+    <script src="../src/js/wol-util.js"></script>
+    <script src="../src/js/wol-locator.js"></script>
+    <script src="../src/js/wol-tracer.js"></script>
+    <script src="../src/js/wol-viewer.js"></script>-->
+    <script>
+        //点、线、面
+        var point = wol.util.createFeatureFromWKT('POINT(13059385.715379057 4734320.828070238)');
+        var point2 = wol.util.createFeatureFromWKT('POINT(13059082.355923051 4734194.22924214)');
+        var point3 = wol.util.createFeatureFromWKT('POINT(13059619.80377818 4734194.22924214)');
+        var line = wol.util.createFeatureFromWKT('LINESTRING(13059084.744580185 4734660.017383253,13059082.355923051 4734194.22924214,13059619.80377818 4734194.22924214)');
+        var polygon = wol.util.createFeatureFromWKT('POLYGON((13059084.744580185 4734660.017383253,13059082.355923051 4734194.22924214,13059619.80377818 4734194.22924214,13059586.362578306 4734650.462754718,13059084.744580185 4734660.017383253))');
+
+        //添加聚合要素
+        var styleCache = {};
+        var mapViewer = new wol.MapViewer('mapContainer', {
+            zoom: 14,
+            layers: [
+                {
+                    type: 'XYZ',
+                    name: 'baseLayer',
+                    label: '底图',
+                    url: 'http://10.120.20.33:8090/tile/t/{z}/{y}/{x}',
+                    zIndex: 0,
+                    group: '基本图层'
+                },
+                {
+                    type: 'Mask',
+                    name: 'maskLayer',
+                    label: '遮罩',
+                    group: '基本图层'
+                },
+                {
+                    type: 'Vector',
+                    name: 'testLayer',
+                    label: '东丽茶庄',
+                    group: '东丽区',
+                    features: [point, line, polygon]
+                },
+                {
+                    type: 'Cluster',
+                    name: 'defectLayer',
+                    label: '缺陷图层',
+                    features: [point, point2, point3],
+                },
+            ]
+        });
+        //console.info(mapViewer.getLayerByName('defectLayer').get('label'));
+
+        function turnOn() {
+            mapViewer.getLayerByName('maskLayer').setVisible(false);
+        }
+        function off() {
+            mapViewer.getLayerByName('maskLayer').setVisible(true);
+        }
+        function removeLayer() {
+            console.info(mapViewer.getLayerByName('maskLayer').get('label'));
+        }
+        function panTo() {
+            mapViewer.panTo([13059385.715379057,4734320.828070238], 500);
+        }
+        function extentAt() {
+            mapViewer.extentAt(polygon.getGeometry(), 500);
+        }
+        function getZoom() {
+            var reso = mapViewer.getMap().getView().getZoom();
+            console.log(reso);
+        }
+        function addWMSLayer() {
+            var layer = wol.util.createWMSLayer({
+                name: 'wmsLayer',
+                url: 'http://demo.boundlessgeo.com/geoserver/wms',
+                params: {'LAYERS': 'topp:states', 'TILED': true},
+                serverType: 'geoserver',
+            });
+            mapViewer.addLayer(layer);
+            mapViewer.getMap().getView().setCenter([-10997148, 4569099]);
+        }
+
+        var locater = new wol.Locator(mapViewer);
+        function locatePoint() {
+            locater.setFlashStyle(new ol.style.Style({
+                image: new ol.style.Circle({
+                    stroke: new ol.style.Stroke({
+                        color: '#ed3e00',
+                        width: 2
+                    }),
+                    radius: 600
+                })
+            }));
+
+            locater.locate(point, {
+                duration: 1000,
+                times: 3,
+                autoView: true
+            });
+        }
+        function locateLine() {
+            locater.locate(line, {
+                duration: 1000,
+                times: 5,
+                autoView: true
+            });
+        }
+        function locateArea() {
+            locater.locate(polygon, {
+                duration: 1500,
+                times: 3,
+                autoView: true
+            });
+        }
+
+        var tracer = new wol.Tracer(mapViewer);
+        var traceLine1 = wol.util.createFeatureFromWKT('LINESTRING(116.95856094360352 39.45636749267578,116.99941635131836 39.32281494140625,117.06018447875977 39.33448791503906,117.09280014038086 39.27234649658203)');
+        wol.util.transform(traceLine1, 'EPSG:4326', 'EPSG:3857');
+        tracer.init({
+            source: traceLine1,
+            speed: 6,
+            afterInitialize: function() {
+                console.info('轨迹初始化完成 ^_^');
+            },
+            afterStart: function() {
+                console.info('轨迹开始播放 ^_^');
+            },
+            afterComplete: function() {
+                console.info('轨迹播放结束 ^_^');
+            },
+            ifDynamicTrack: false,
+            ifLocate: true,
+//            icon: 'tracer-car.png',   //轨迹播放图标
+            iconClass: 'my-drone',  //图标样式
+            iconSize: 50,   //图标大小
+        });
+
+        function play() {
+            tracer.play();
+        }
+        function pause() {
+            tracer.pause();
+        }
+        function reset() {
+            tracer.reset();
+        }
+        function clearTrace() {
+            tracer.clear();
+        }
+        function initTrace() {
+            var traceLine = wol.util.createFeatureFromWKT('LINESTRING(117.00216293334961 39.37671661376953,117.03580856323242 39.36470031738281,117.07700729370117 39.363670349121094,117.10000991821289 39.338951110839844,117.16764450073242 39.36126708984375)');
+            wol.util.transform(traceLine, 'EPSG:4326', 'EPSG:3857');
+            tracer.init({
+                source: traceLine,
+                ifDynamicTrack: true
+            });
+        }
+        function alterTraceIcon() {
+            tracer.setIcon({
+                src: 'a/tracer-car.png',
+                scale: 0.46
+            });
+        }
+
+        function getLayerTree() {
+            var layerManager = new wol.LayerManager(mapViewer);
+            layerManager.init({
+                target: 'mapTree',
+                exclude: ['locateLayer']
+            });
+        }
+
+        var layer1 = wol.util.createVectorLayer({
+            name: 'testLayer',
+            label: '测试图层'
+        });
+        function addOneLayer() {
+            mapViewer.addLayer(layer1);
+        }
+        function removeOneLayer() {
+            mapViewer.removeLayer(layer1);
+        }
+
+        /**
+         * 从WKT字符串中解析要素
+         */
+        function createFeatureFromWKT(wktStr) {
+            var format = new ol.format.WKT();
+            var feature = format.readFeature(wktStr);
+            return feature;
+        }
+
+        /**
+         *  获取几个区域的geometry
+         */
+        function createGeometryFromFeature(feature){
+            var geometry = feature.getGeometry();
+            return geometry;
+        }
+
+        var hgFeature = createFeatureFromWKT('POLYGON((119.606521 40.057249,119.606483 40.057254,119.606357 40.054476,119.606521 40.057249,119.61262 40.056577,119.612491 40.059641,119.618287 40.059918,119.619559 40.063619,119.624595 40.061461,119.629373 40.06641,119.639297 40.058215,119.644428 40.061981,119.653264 40.060092,119.666241 40.065166,119.665039 40.075653,119.670797 40.070718,119.667966 40.061794,119.672553 40.054947,119.667961 40.047528,119.655769 40.051771,119.646842 40.047723,119.650597 40.045065,119.649834 40.041148,119.639942 40.043158,119.642459 40.029904,119.636879 40.029775,119.631752 40.035573,119.624664 40.037292,119.628238 40.024273,119.632839 40.025097,119.628889 40.021371,119.631221 40.018886,119.627069 40.017024,119.626898 40.006851,119.622402 40.006781,119.616191 40.000031,119.633799 39.99394,119.640402 39.997254,119.659716 39.994631,119.663637 39.998997,119.666465 39.994933,119.67288 39.995182,119.671949 39.991936,119.678997 39.994875,119.676629 39.98244,119.689824 39.975012,119.68601 39.973394,119.69197 39.972486,119.693212 39.966812,119.708061 39.970939,119.705004 39.959561,119.71017 39.955115,119.707828 39.948202,119.712891 39.944111,119.688465 39.940286,119.688557 39.936321,119.675145 39.936291,119.675083 39.930951,119.66893 39.924055,119.674744 39.931265,119.673533 39.934919,119.668972 39.931705,119.673733 39.938239,119.65502 39.933942,119.658575 39.920274,119.655928 39.917138,119.657602 39.923231,119.653939 39.921946,119.656303 39.924599,119.652956 39.932568,119.641279 39.92391,119.63836 39.927713,119.634384 39.926803,119.606419 39.903998,119.611251 39.908688,119.595655 39.904735,119.598996 39.908439,119.596473 39.911383))');
+        //console.info(createGeometryFromFeature(hgFeature));
+    </script>
+</body>
+</html>
