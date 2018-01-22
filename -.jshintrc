@@ -1,0 +1,23 @@
+{
+  "asi": false,
+  "boss": true,
+  "curly": true,
+  "eqeqeq": true,
+  "eqnull": true,
+  "evil": false,
+  "forin": true,
+  "maxerr": 10,
+  "newcap": true,
+  "onevar": true,
+  "regexp": true,
+  "undef": true,
+  "sub": false,
+  "globals": {
+    "jQuery": true,
+    "console": true,
+    "module": true,
+    "ol": true,
+    "window": true,
+    "setTimeout": true
+  }
+}

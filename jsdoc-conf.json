@@ -1,0 +1,41 @@
+{
+    "tags": {
+        "allowUnknownTags": true
+    },
+    "source": {
+        "include": ["src/js"],
+        "exclude": [],
+        "includePattern": ".+\\.(js|es)$"
+    },    
+    "templates": {
+        "logoFile": "logo.png",
+        "cleverLinks": false,
+        "monospaceLinks": false,
+        "dateFormat": "ddd MMM Do YYYY",
+        "outputSourceFiles": true,
+        "outputSourcePath": true,
+        "systemName": "WolMap",
+        "footer": "",
+        "copyright": "©2017 Womow",
+        "theme": "cosmo",
+        "linenums": true,
+        "collapseSymbols": false,
+        "inverseNav": true,
+        "protocol": "",
+        "methodHeadingReturns": true
+    },
+    "opts": {
+        "template": "node_modules/ink-docstrap/template",
+        "destination": "docs/", 
+        "recurse": true,           
+        "debug": true,
+        "readme": "README.md"
+    },
+	"plugins": ["plugins/markdown"],
+	"markdown": {
+        "tags": ["file"],
+        "excludeTags": ["author"],
+        "parser": "gfm",
+        "hardwrap": true
+    }
+}

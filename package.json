@@ -1,0 +1,23 @@
+{
+  "name": "wol-map",
+  "version": "1.2.0",
+  "description": "基于Openlayers的地图常用功能封装，实现地图的简单快速开发，依赖Openlayers v4.1.1版本",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "ink-docstrap": "^1.3.0"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-cssmin": "^2.0.0",
+    "grunt-contrib-jshint": "^1.1.0",
+    "grunt-contrib-uglify": "^2.1.0",
+    "grunt-contrib-watch": "^1.0.0"
+  },
+  "keywords": ["openlayers", "地图"],
+  "author": "aegean",
+  "license": "ISC",
+  "createdTime": "2017/3/7"
+}
