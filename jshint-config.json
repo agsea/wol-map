@@ -1,0 +1,11 @@
+{
+  "undef": false,
+  "unused": false,
+  "predef": ["window", "document", "jQuery", "$"],
+  "white": false,
+  "sub": true,
+  "asi": true,
+  "lastsemic": true,
+  "shadow": true,
+  "forin": false
+}

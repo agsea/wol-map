@@ -1,7 +1,7 @@
 {
   "name": "wol-map",
   "version": "1.2.0",
-  "description": "基于Openlayers的地图常用功能封装，实现地图的简单快速开发，依赖Openlayers v4.1.1版本",
+  "description": "基于OpenLayers 二次封装的js地图模块，提供要素编辑、地图定位、轨迹回放等开箱即用的功能，实现地图应用的快速开发",
   "directories": {
     "doc": "docs"
   },
@@ -9,15 +9,23 @@
     "ink-docstrap": "^1.3.0"
   },
   "devDependencies": {
-    "grunt": "^1.0.1",
-    "grunt-contrib-concat": "^1.0.1",
-    "grunt-contrib-cssmin": "^2.0.0",
-    "grunt-contrib-jshint": "^1.1.0",
-    "grunt-contrib-uglify": "^2.1.0",
-    "grunt-contrib-watch": "^1.0.0"
+    "format-date": "^1.0.0",
+    "gulp": "^3.9.1",
+    "gulp-clean": "^0.3.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-cssmin": "^0.2.0",
+    "gulp-inject-string": "^1.1.0",
+    "gulp-jshint": "^2.0.4",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^3.0.0",
+    "jshint": "^2.9.5",
+    "jshint-stylish": "^2.2.1"
   },
-  "keywords": ["openlayers", "地图"],
-  "author": "aegean",
-  "license": "ISC",
+  "keywords": [
+    "openlayers",
+    "map"
+  ],
+  "author": "agsea",
+  "license": "MIT",
   "createdTime": "2017/3/7"
 }
