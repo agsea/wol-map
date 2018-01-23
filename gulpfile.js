@@ -25,12 +25,13 @@ var descLine = `/*! ${pkgJSON.description} */`;
 var bannerPartLine = `/*! ${moduleName} v${pkgJSON.version} | (c) ${pkgJSON.author} | Created on ${pkgJSON.createdTime} */`;
 var concatBanner = `${bannerPartLine}\n${descLine}\n/*! Modified on ${timeYMDHMS} */\n\n`;
 var uglifyBanner = `${bannerPartLine}\n${descLine}\n/*! Modified on ${timeYMDHM} */\n\n`;
-var footerStr = `\n/*** That blue eyes exist in the aegean sea! ***/\n`;
+var footerStr = `\n\n/*** That blue eyes exist in the aegean sea! ***/\n`;
 
 
 // 压缩css
 gulp.task('minCss', function() {
-    gulp.src(['src/css/*.css', './src/lib/ol-v4.1.1/ol.css'])
+    gulp.src(['./src/lib/ol-v4.1.1/ol.css', './src/css/*.css'])
+        .pipe(concat('all.min.css'))
         .pipe(cssmin())
         .pipe(inject.prepend(uglifyBanner))
         .pipe(inject.append(footerStr))
@@ -59,7 +60,7 @@ gulp.task('concatJs_tmp_min', function() {
 });
 // 合并未压缩的临时js与依赖库
 gulp.task('concatJs', ['concatJs_tmp'], function() {
-    return gulp.src([`./${targetDir}/temp/${pkgJSON.name}-${pkgJSON.version}-temp.js`, './src/lib/ol-v4.1.1/ol.js'])
+    return gulp.src(['./src/lib/ol-v4.1.1/ol.js', `./${targetDir}/temp/${pkgJSON.name}-${pkgJSON.version}-temp.js`])
         .pipe(concat('all.js'))
         .pipe(inject.prepend(concatBanner))
         .pipe(inject.append(footerStr))
@@ -68,7 +69,7 @@ gulp.task('concatJs', ['concatJs_tmp'], function() {
 });
 // 合并压缩的临时js与依赖库
 gulp.task('concatJs_min', ['concatJs_tmp_min'], function() {
-    return gulp.src([`./${targetDir}/temp/${pkgJSON.name}-${pkgJSON.version}-temp.min.js`, './src/lib/ol-v4.1.1/ol.js'])
+    return gulp.src(['./src/lib/ol-v4.1.1/ol.js', `./${targetDir}/temp/${pkgJSON.name}-${pkgJSON.version}-temp.min.js`])
         .pipe(concat('all.min.js'))
         .pipe(inject.prepend(uglifyBanner))
         .pipe(inject.append(footerStr))

@@ -17,8 +17,6 @@
     var _curJsPath = decodeURI(_currentScriptPath());
     var pathArr = _curJsPath.split('/');
     pathArr.pop();
-    pathArr.pop();
-    pathArr[1] = '/';
     var newPath = pathArr.join('/');
     var _iconPath = newPath + '/image/drone.gif';
 

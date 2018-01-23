@@ -1,7 +1,7 @@
 {
   "undef": false,
   "unused": false,
-  "predef": ["window", "document", "jQuery", "$"],
+  "predef": ["window", "document", "jQuery", "$", "ol"],
   "white": false,
   "sub": true,
   "asi": true,
