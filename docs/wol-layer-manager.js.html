@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>WolMap Source: wol-layer-manager.js</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.cosmo.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html"><img class="branding-logo" src="logo.png"
+		alt="logo"/>WolMap</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="namespaces.list.html" class="dropdown-toggle" data-toggle="dropdown">Namespaces<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="DragHandler.html">DragHandler</a></li><li><a href="wol.html">wol</a></li><li><a href="wol.util.html">wol.util</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="wol.LayerManager.html">wol.LayerManager</a></li><li><a href="wol.Locator.html">wol.Locator</a></li><li><a href="wol.MapViewer.html">wol.MapViewer</a></li><li><a href="wol.Tracer.html">wol.Tracer</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-12">
+	
+		<div id="main">
+			
+
+		<h1 class="page-title">Source: wol-layer-manager.js</h1>
+    
+<section>
+    <article>
+        <pre
+            class="sunlight-highlight-javascript linenums">/**
+ * 图层管理工具
+ * Created by Aegean on 2017/3/31 0031.
+ */
+
+;(function(global) {
+    global.wol = global.wol || {};
+
+    //图层管理HTML模板
+    var templateAll = '&lt;div class="layer-manager-container in-map pos-absolute" draggable="true" ondragstart="DragHandler.startDrag(event, this)"' +
+    'ondrag="DragHandler.dragging(event, this)" ondragend="DragHandler.endDrag(event, this)">' +
+    '&lt;h4>图层控制&lt;/h4>' +
+    '&lt;div>' +
+    '&lt;ul id="wolLayerTree0" class="ztree">&lt;/ul>' +
+    '&lt;/div>' +
+    '&lt;/div>';
+    var templatePart = '&lt;div class="layer-manager-container normal">' +
+        '&lt;div>' +
+        '&lt;ul id="wolLayerTree0" class="ztree">&lt;/ul>' +
+        '&lt;/div>' +
+        '&lt;/div>';
+
+    /**
+     * 图层管理对象
+     * @constructor
+     * @param {wol.MapViewer} mapViewer - wol地图实例
+     */
+    wol.LayerManager = function(mapViewer) {
+        var _map = mapViewer.getMap();
+        var _layers;
+        var _treeNodeData;
+        var defaultOption = {exclude: []};
+
+        /**
+         * 初始化图层管理对象
+         * @param {object|undefined} option - 过滤图层，传入待过滤图层的名称或图层名称数组，可选
+         * @param {string|Array&lt;string>} option.exclude - 过滤图层，传入待过滤图层的名称或图层名称数组
+         * @param {string} option.target - 图层树目标容器DOM元素id
+         */
+        this.init = function(option) {
+            defaultOption = wol.util.extend(defaultOption, option);
+
+            var treeContainer;
+            if(defaultOption.target === undefined) {
+                treeContainer = $(mapViewer.getMap().getTargetElement());
+                if(treeContainer.attr('has-tree')) {
+                    return;
+                }
+                treeContainer.append(templateAll);
+            }else {
+                treeContainer = $('#' + defaultOption.target);
+                if(treeContainer.attr('has-tree')) {
+                    return;
+                }
+                treeContainer.append(templatePart);
+            }
+            treeContainer.attr('has-tree', true);
+
+            _layers = _map.getLayers().getArray();
+            var groupData = getGroupData(_layers, defaultOption);
+            _treeNodeData = createTreeNodeData(groupData);
+            initTree(_treeNodeData);
+
+            //注册更新
+            mapViewer.register('addLayer', update);
+            mapViewer.register('removeLayer', update);
+        }
+        
+        /**
+         * 获取地图实例
+         * @return {ol.Map}
+         */
+        this.getMap = function() {
+            return _map;
+        }
+
+        /**
+         * 获取图层组
+         */
+        this.getLayers = function() {
+            return _layers;
+        }
+
+        /**
+         * 获取图层树
+         * @return {Array}
+         */
+        this.getTreeData = function() {
+            return _treeNodeData;
+        }
+
+        /**
+         * 初始化树（此处所需HTML结构应内部生成，以体现封装性）
+         * @private
+         * @param treeNodeData - 节点数据
+         * @param mapViewer - wol地图实例
+         */
+        function initTree(treeNodeData) {
+            // 设置选项
+            var setting = {
+                view : {
+                    selectedMulti : false
+                },
+                edit : {
+                    enable : true
+                },
+                check: {
+                    enable: true
+                },
+                data : {
+                    simpleData : {enable: true}
+                },
+                callback : {
+                    beforeEditName : beforeEditName,
+                    onClick : onClick,
+                    onCheck: onCheck
+                }
+            }
+
+            /**
+             * 编辑节点
+             * @param treeId
+             * @param treeNode
+             * @return {boolean}
+             */
+            function beforeEditName(treeId, treeNode) {
+                var zTree = $.fn.zTree.getZTreeObj('treeDemo');
+                zTree.selectNode(treeNode);
+                return false;
+            }
+
+            /**
+             * 节点单击事件
+             * @param event
+             * @param treeId
+             * @param treeNode
+             */
+            function onClick(event, treeId, treeNode) {
+                //移除选中样式
+                var selector = '#' + treeNode.tId + '_a';
+                $(selector).removeClass('curSelectedNode');
+            }
+
+            /**
+             * 节点选中事件
+             * @param event
+             * @param treeId
+             * @param treeNode
+             */
+            function onCheck(event, treeId, treeNode) {
+                var layerName = treeNode.layerName;
+                var layer = mapViewer.getLayerByName(layerName);
+                if(treeNode.checked) {
+                    //显示图层
+                    layer.setVisible(true);
+                }else {
+                    //隐藏图层
+                    layer.setVisible(false);
+                }
+            }
+
+            //执行初始化
+            $.fn.zTree.init($('#wolLayerTree0'), setting, treeNodeData);
+        }
+
+        /**
+         * 更新图层树
+         * @private
+         */
+        function update() {
+            var groupData = getGroupData(_layers, defaultOption);
+            _treeNodeData = createTreeNodeData(groupData);
+            initTree(_treeNodeData);
+        }
+    }
+
+    /**
+     * 获取分组数据
+     * @private
+     * @param {Array&lt;ol.layer.Base>} layers - 图层数组
+     * @param {object} option - 参数项
+     */
+    function getGroupData(layers, option) {
+        var layer, group, breakFlag;
+        var nodeData = {}, node;
+
+        var filter = option.exclude;
+        filter = (filter) ? filter : [];
+        filter = (filter instanceof Array) ? filter : [filter];
+
+        for(var i = 0; i &lt; layers.length; i++) {
+            layer = layers[i];
+            for(var j = 0; j &lt; filter.length; j++) {
+                if(layer.get('name') === filter[j]) {
+                    breakFlag = true;
+                    break;
+                }
+            }
+            if(breakFlag) {
+                breakFlag = false;
+                continue;
+            }
+
+            group = layer.get('group');
+            if(nodeData[group] === undefined) {
+                nodeData[group] = [];
+            }
+
+            node = {
+                name: layer.get('name'),
+                label: layer.get('label'),
+                type: layer.get('type'),
+                zIndex: layer.getZIndex(),
+                checked: layer.getVisible()
+            };
+            //node.label = (node.label.length > 6) ? node.label.substring(0, 6) : node.label;
+            nodeData[group].push(node);
+        }
+        return nodeData;
+    }
+
+    /**
+     * 创建节点数据
+     * @param groupData - 分组数据
+     */
+    function createTreeNodeData(groupData) {
+        var treeNodeData = [], treeNode;
+        var tempDatas;
+
+        for(var key in groupData) {
+            if(key === 'undefined') {
+                tempDatas = groupData[key];
+                for(var i = 0; i &lt; tempDatas.length; i++) {
+                    treeNode = {
+                        open: true,
+                        checked: tempDatas[i].checked,
+                        iconSkin: 'layerIcon',
+                        name: tempDatas[i].label,
+                        layerName: tempDatas[i].name,
+                        type: tempDatas[i].type,
+                        zIndex: tempDatas[i].zIndex
+                    };
+                    treeNodeData.push(treeNode);
+                }
+            }else {
+                tempDatas = groupData[key];
+                treeNode = {
+                    open: false,
+                    nocheck: true,
+                    iconSkin: 'layersIcon',
+                    name: key,
+                    children: []
+                };
+
+                for(var i = 0; i &lt; tempDatas.length; i++) {
+                    treeNode.children.push({
+                        open: true,
+                        checked: tempDatas[i].checked,
+                        iconSkin: 'layerIcon',
+                        name: tempDatas[i].label,
+                        layerName: tempDatas[i].name,
+                        type: tempDatas[i].type,
+                        zIndex: tempDatas[i].zIndex
+                    });
+                }
+                treeNodeData.push(treeNode);
+            }
+        }
+
+        return treeNodeData;
+    }
+})(window);</pre>
+    </article>
+</section>
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+
+</div>
+</div>
+
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
+
+<footer>
+
+
+	<span class="copyright">
+	©2017 Womow
+	</span>
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
+	
+		on Tue Nov 14th 2017
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
+
+
+</body>
+</html>

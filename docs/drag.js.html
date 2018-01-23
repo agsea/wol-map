@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>WolMap Source: b1.js</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.cosmo.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html"><img class="branding-logo" src="logo.png"
+		alt="logo"/>WolMap</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="namespaces.list.html" class="dropdown-toggle" data-toggle="dropdown">Namespaces<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="DragHandler.html">DragHandler</a></li><li><a href="wol.html">wol</a></li><li><a href="wol.util.html">wol.util</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="wol.LayerManager.html">wol.LayerManager</a></li><li><a href="wol.Locator.html">wol.Locator</a></li><li><a href="wol.MapViewer.html">wol.MapViewer</a></li><li><a href="wol.Tracer.html">wol.Tracer</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-12">
+	
+		<div id="main">
+			
+
+		<h1 class="page-title">Source: b1.js</h1>
+    
+<section>
+    <article>
+        <pre
+            class="sunlight-highlight-javascript linenums">/**
+ * 图片拖动事件集
+ * Created by Administrator on 2017/4/6 0006.
+ */
+
+(function(global) {
+    /**
+     * 命名空间
+     * @namespace DragHandler
+     */
+    global.DragHandler = global.DragHandler || {};
+
+    /**
+     * 开始拖动
+     * @param evt
+     */
+    DragHandler.startDrag = function(evt, ele) {
+        var dragEle = $(ele);
+        var container = dragEle.parent();
+
+        //当前鼠标位置
+        var mouseX = evt.clientX || evt.pageX || evt.screenX;
+        var mouseY = evt.clientY || evt.pageY || evt.screenY;
+
+        //被拖动元素所在容器的左上边距
+        var conMarginL = parseFloat(container.css('margin-left'));
+        var conMarginT = parseFloat(container.css('margin-top'));
+
+        //被拖动元素的左上边距
+        var dragEleMarginL = parseFloat(dragEle.css('margin-left'));
+        var dragEleMarginT = parseFloat(dragEle.css('margin-top'));
+
+        //鼠标相对图片左上角的位置
+        var mouseOffsetX = mouseX - conMarginL - dragEleMarginL;
+        var mouseOffsetY = mouseY - conMarginT - dragEleMarginT;
+
+
+        dragEle.attr('conMarginL', conMarginL);
+        dragEle.attr('conMarginT', conMarginT);
+        dragEle.attr('mouseOffsetX', mouseOffsetX);
+        dragEle.attr('mouseOffsetY', mouseOffsetY);
+    }
+
+    /**
+     * 拖动中
+     * @param evt
+     */
+    DragHandler.dragging = function(evt, ele, callback) {
+        var dragEle = $(ele);
+
+        //当前鼠标位置
+        var mouseX = evt.clientX || evt.pageX || evt.screenX;
+        var mouseY = evt.clientY || evt.pageY || evt.screenY;
+
+        //被拖动元素所在容器的左上边距、鼠标相对图片左上角的位置
+        var conMarginL = dragEle.attr('conMarginL');
+        var conMarginT = dragEle.attr('conMarginT');
+        var mouseOffsetX = dragEle.attr('mouseOffsetX');
+        var mouseOffsetY = dragEle.attr('mouseOffsetY');
+
+        //图片新的位置
+        var tarMarginL = mouseX - conMarginL - mouseOffsetX;
+        var tarMarginT = mouseY - conMarginT - mouseOffsetY;
+        dragEle.css('margin-left', tarMarginL);
+        dragEle.css('margin-top', tarMarginT);
+
+        //执行回调
+        if(callback instanceof Function) {
+            var params = {
+                dragMarginL: tarMarginL,
+                dragMarginT: tarMarginT
+            };
+            callback(dragEle, params);
+        }
+    }
+
+    /**
+     * 拖动结束
+     * @param evt
+     */
+    DragHandler.endDrag = function(evt, ele) {
+    }
+
+    /**
+     * 允许放置，拖动过程中鼠标样式显示为可拖动状态，一般用于被拖动元素的父容器
+     * @param evt
+     */
+    DragHandler.allowDrop = function(evt) {
+        evt.preventDefault();
+    }
+})(window);</pre>
+    </article>
+</section>
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+
+</div>
+</div>
+
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
+
+<footer>
+
+
+	<span class="copyright">
+	©2017 Womow
+	</span>
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
+	
+		on Tue Nov 14th 2017
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
+
+
+</body>
+</html>
