@@ -1,3 +1,3 @@
 ## WolMap
 
-[OpenLayers](https://openlayers.org/) is a high-performance, feature-packed library for creating interactive maps on the web. It can display map tiles, vector data and markers loaded from any source on any web page. OpenLayers has been developed to further the use of geographic information of all kinds. It is completely free, Open Source JavaScript, released under the 2-clause BSD License (also known as the FreeBSD).
+基于[OpenLayers](https://openlayers.org/) 二次封装的js地图模块，提供要素编辑、地图定位、轨迹回放等开箱即用的功能，实现地图应用的快速开发。
