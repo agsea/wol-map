@@ -7,4 +7,4 @@
 
 [MIT](http://opensource.org/licenses/MIT)
 
-Copyright (c) 2017-present, agsea
+Copyright (c) 2017-present, [agsea](https://github.com/agsea)
