@@ -73,11 +73,27 @@
                 {
                     type: 'XYZ',
                     name: 'baseLayer',
-                    label: '底图',
-                    url: 'http://10.120.20.33:8090/tile/t/{z}/{y}/{x}',
+                    label: '电子底图',
+                    url: 'https://webrd03.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
                     zIndex: 0,
                     group: '基本图层'
                 },
+                /*{
+                    type: 'XYZ',
+                    name: 'baseLayerWx',
+                    label: '卫星底图',
+                    url: 'https://webst04.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+                    zIndex: 0,
+                    group: '基本图层'
+                },*/
+                /*{
+                    type: 'XYZ',
+                    name: 'baseLayerWord',
+                    label: '文字图层',
+                    url: 'http://wprd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=8&x={x}&y={y}&z={z}',
+                    zIndex: 0,
+                    group: '基本图层'
+                },*/
                 {
                     type: 'Mask',
                     name: 'maskLayer',
