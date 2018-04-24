@@ -438,7 +438,7 @@
             i++;
         }
 
-        if(typeof target !== "object" && !jQuery.isFunction(target)) {
+        if(typeof target !== "object" && !wol.util.isFunction(target)) {
             target = {};
         }
 
@@ -459,12 +459,12 @@
                     }
 
                     // Recurse if we're merging plain objects or arrays
-                    if(deep && copy && (jQuery.isPlainObject(copy) || (copyIsArray = jQuery.isArray(copy)))) {
+                    if(deep && copy && (wol.util.isPlainObject(copy) || (copyIsArray = Array.isArray(copy)))) {
                         if(copyIsArray) {
                             copyIsArray = false;
-                            clone = src && jQuery.isArray(src) ? src : [];
+                            clone = src && Array.isArray(src) ? src : [];
                         }else {
-                            clone = src && jQuery.isPlainObject(src) ? src : {};
+                            clone = src && wol.util.isPlainObject(src) ? src : {};
                         }
 
                         // Never move original objects, clone them
@@ -479,6 +479,22 @@
         // Return the modified object
         return target;
     });
+
+    wol.util.isFunction = function(obj) {
+        return typeof obj === "function" && typeof obj.nodeType !== "number";
+    };
+    wol.util.isPlainObject = function(obj) {
+        var proto, Ctor;
+        if(!obj || obj.toString() !== "[object Object]") {
+            return false;
+        }
+        proto = Object.getPrototypeOf(obj);
+        if(!proto) {
+            return true;
+        }
+        Ctor = proto.hasOwnProperty("constructor") && proto.constructor;
+        return typeof Ctor === "function" && Ctor.toString() === "[object Object]";
+    };
 
     /**
      * 获取颜色表示类型

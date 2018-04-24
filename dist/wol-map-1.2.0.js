@@ -1,6 +1,6 @@
 /*! WolMap v1.2.0 | (c) agsea | Created on 2017/3/7 */
 /*! 基于OpenLayers 二次封装的js地图模块，提供要素编辑、地图定位、轨迹回放等开箱即用的功能，实现地图应用的快速开发 */
-/*! Modified on 2018/02/24 16:59:40 */
+/*! Modified on 2018/04/24 17:52:02 */
 
 // OpenLayers. See https://openlayers.org/
 // License: https://raw.githubusercontent.com/openlayers/openlayers/master/LICENSE.md
@@ -2855,7 +2855,7 @@ Qk.prototype.changed=Qk.prototype.s;Qk.prototype.dispatchEvent=Qk.prototype.b;Qk
             i++;
         }
 
-        if(typeof target !== "object" && !jQuery.isFunction(target)) {
+        if(typeof target !== "object" && !wol.util.isFunction(target)) {
             target = {};
         }
 
@@ -2876,12 +2876,12 @@ Qk.prototype.changed=Qk.prototype.s;Qk.prototype.dispatchEvent=Qk.prototype.b;Qk
                     }
 
                     // Recurse if we're merging plain objects or arrays
-                    if(deep && copy && (jQuery.isPlainObject(copy) || (copyIsArray = jQuery.isArray(copy)))) {
+                    if(deep && copy && (wol.util.isPlainObject(copy) || (copyIsArray = Array.isArray(copy)))) {
                         if(copyIsArray) {
                             copyIsArray = false;
-                            clone = src && jQuery.isArray(src) ? src : [];
+                            clone = src && Array.isArray(src) ? src : [];
                         }else {
-                            clone = src && jQuery.isPlainObject(src) ? src : {};
+                            clone = src && wol.util.isPlainObject(src) ? src : {};
                         }
 
                         // Never move original objects, clone them
@@ -2896,6 +2896,22 @@ Qk.prototype.changed=Qk.prototype.s;Qk.prototype.dispatchEvent=Qk.prototype.b;Qk
         // Return the modified object
         return target;
     });
+
+    wol.util.isFunction = function(obj) {
+        return typeof obj === "function" && typeof obj.nodeType !== "number";
+    };
+    wol.util.isPlainObject = function(obj) {
+        var proto, Ctor;
+        if(!obj || obj.toString() !== "[object Object]") {
+            return false;
+        }
+        proto = Object.getPrototypeOf(obj);
+        if(!proto) {
+            return true;
+        }
+        Ctor = proto.hasOwnProperty("constructor") && proto.constructor;
+        return typeof Ctor === "function" && Ctor.toString() === "[object Object]";
+    };
 
     /**
      * 获取颜色表示类型
@@ -3000,6 +3016,7 @@ Qk.prototype.changed=Qk.prototype.s;Qk.prototype.dispatchEvent=Qk.prototype.b;Qk
         return temp;
     }
 })(window);
+
 /**
  * 地图浏览
  * Created by Aegean on 2017/3/7 0007.
