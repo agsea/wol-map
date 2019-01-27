@@ -483,6 +483,7 @@
     wol.util.isFunction = function(obj) {
         return typeof obj === "function" && typeof obj.nodeType !== "number";
     };
+
     wol.util.isPlainObject = function(obj) {
         var proto, Ctor;
         if(!obj || obj.toString() !== "[object Object]") {
@@ -597,5 +598,81 @@
             temp[i] = parseInt(temp[i]);
         }
         return temp;
+    }
+
+    /**
+     * 拆分坐标点数组，在两两坐标点之间按均匀步长生成密集的坐标点
+     * @param {Array<ol.Coordinate>} sourceCoords - 原始坐标点数组
+     * @param {number} step - 步长（沿线方向）
+     * @return {Array<ol.Coordinate>}
+     */
+    wol.util.splitCoordinates = function(sourceCoords, step) {
+        var len = sourceCoords.length;
+        if(len >= 2) {
+            var i = 0;
+            var newCoords = [], temp;
+            for(; i < len - 1; i++) {
+                temp = _getInterpolation(sourceCoords[i], sourceCoords[i + 1], step);
+                newCoords = newCoords.concat(temp);
+            }
+            return newCoords;
+        }else {
+            throw new Error('至少包含两个点');
+        }
+    }
+
+    /**
+     * 根据两个坐标点获取插值数组
+     * @private
+     * @param {ol.Coordinate} point1
+     * @param {ol.Coordinate} point2
+     * @param {number} step - 步长（沿线方向）
+     * @return {Array<Array>}
+     */
+    function _getInterpolation(point1, point2, step) {
+        //参数设置
+        var x1 = point1[0], y1 = point1[1],
+            x2 = point2[0], y2 = point2[1];
+        var targetArray = [point1];
+        var tempX, tempY;
+        var dirX = x1 < x2 ? 1 : -1, dirY = y1 < y2 ? 1 : -1;
+        var stepX, stepY;
+
+        if(y1 === y2) {
+            stepX = dirX * step;
+            tempX = x1 + stepX;
+            tempY = y1;
+            while(dirX > 0 ? tempX < x2 : tempX > x2) {
+                targetArray.push([tempX, tempY]);
+                tempX += stepX;
+            }
+        }else if(x1 === x2) {
+            stepY = dirY * step;
+            tempX = x1;
+            tempY = y1 + stepY;
+            while(dirX > 0 ? tempY < y2 : tempY > y2) {
+                targetArray.push([tempX, tempY]);
+                tempY += stepY;
+            }
+        }else {
+            //斜率
+            var slope = Math.abs((y2 - y1) / (x2 - x1));
+            //根据步长计算x和y方向增量
+            var tmpStepX = step / Math.pow((1 + slope * slope), 0.5);
+            var tmpStepY = tmpStepX * slope;
+            stepX = dirX * tmpStepX;
+            stepY = dirY * tmpStepY;
+
+            tempX = x1 + stepX;
+            tempY = y1 + stepY;
+            while(dirX > 0 ? tempX < x2 : tempX > x2) {
+                targetArray.push([tempX, tempY]);
+                tempX += stepX;
+                tempY += stepY;
+            }
+        }
+
+        targetArray.push(point2);
+        return targetArray;
     }
 })(window);

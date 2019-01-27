@@ -161,7 +161,7 @@
 
             _traceLine = traceLine;
             var coords = traceLine.getGeometry().getCoordinates();
-            var newCoords = _createAnimateCoords(coords, option.speed);
+            var newCoords = wol.util.splitCoordinates(coords, option.speed);
             _flashLine = new ol.Feature(new ol.geom.LineString([coords[0]]));
             // _flashPoint = new ol.Feature(new ol.geom.Point(coords[0]));
             _flashPOverlay = new ol.Overlay({
@@ -336,7 +336,6 @@
         clearInterval(self.timer);
         self.status.start = false;
         self.status.animating = false;
-        self.status.complete = false;
         _initAnimateParams(self);
 
         var coord = self.animateParam.srcCoords[0];
@@ -454,77 +453,6 @@
         var viewExtent = view.calculateExtent(map.getSize());
         var flag = ol.extent.containsCoordinate(viewExtent, coord);
         return flag;
-    }
-
-    /**
-     * 生成动画坐标点数组
-     * @private
-     * @param {Array<ol.Coordinate>} origCoords - 原始坐标点数组
-     * @param {number} step - 步长（沿线方向）
-     * @return {Array<ol.Coordinate>}
-     */
-    function _createAnimateCoords(origCoords, step) {
-        var len = origCoords.length;
-        if(len >= 2) {
-            var i = 0;
-            var newCoords = [], temp;
-            for(; i < len - 1; i++) {
-                temp = _getInterpolation(origCoords[i], origCoords[i + 1], step);
-                newCoords = newCoords.concat(temp);
-            }
-            return newCoords;
-        }else {
-            throw new Error('至少包含两个点');
-        }
-    }
-
-    /**
-     * 根据两个坐标点获取插值数组
-     * @private
-     * @param {ol.Coordinate} point1
-     * @param {ol.Coordinate} point2
-     * @param {number} step - 步长（沿线方向）
-     * @return {Array<Array>}
-     */
-    function _getInterpolation(point1, point2, step) {
-        //参数设置
-        var x1 = point1[0], y1 = point1[1],
-            x2 = point2[0], y2 = point2[1];
-        var targetArray = [point1];
-        var tempX, tempY;
-
-        if(y1 === y2) {
-            tempX = x1 + step;
-            tempY = y1;
-            while(tempX < x2) {
-                targetArray.push([tempX, tempY]);
-                tempX += step;
-            }
-        }else if(x1 === x2) {
-            tempX = x1;
-            tempY = y1 + step;
-            while(tempY < y2) {
-                targetArray.push([tempX, tempY]);
-                tempY += step;
-            }
-        }else {
-            //斜率
-            var slope = (y2 - y1) / (x2 - x1);
-            //根据步长计算x和y方向增量
-            var stepX = step / Math.pow((1 + slope * slope), 0.5);
-            var stepY = stepX * slope;
-
-            tempX = x1 + stepX;
-            tempY = y1 + stepY;
-            while(tempX < x2) {
-                targetArray.push([tempX, tempY]);
-                tempX += stepX;
-                tempY += stepY;
-            }
-        }
-
-        targetArray.push(point2);
-        return targetArray;
     }
 
     /**

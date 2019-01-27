@@ -1,0 +1,18 @@
+/*自定义图标*/
+.ztree li span.button.layersIcon_ico_open{
+	background: url("zTreeStyle/img/layerIcons.png") no-repeat 0px 0px;
+}
+.ztree li span.button.layersIcon_ico_close{
+	background: url("zTreeStyle/img/layerIcons.png") no-repeat -16px 0px;
+}
+.ztree li span.button.layersIcon_ico_docu{
+	background: url("zTreeStyle/img/layerIcons.png") no-repeat 0px -15px;
+}
+.ztree li span.button.layerIcon_ico_docu{
+	background: url("zTreeStyle/img/layerIcons.png") no-repeat 0px -15px;
+}
+
+/*覆盖样式*/
+.ztree li a{
+	text-decoration: none !important;
+}
