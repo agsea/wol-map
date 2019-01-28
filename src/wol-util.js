@@ -311,8 +311,8 @@
      */
     wol.util.createMaskLayer = function(option) {
         //遮罩要素
-        var maskFeature = wol.util.createFeatureFromWKT('POLYGON((115.282079820752 41.0624818532467,115.282079820752 36.6007452585101,119.034581570745 36.6007452585101,119.034581570745 41.0624818532467,115.282079820752 41.0624818532467))');
-        wol.util.transform(maskFeature, 'EPSG:4326', 'EPSG:3857');
+        var maskFeature = wol.util.createFeatureFromWKT('POLYGON((8140237.764258131 7592337.145509984,8218509.281222153 313086.06785608083,15889117.94369616 313086.06785608083,15732574.909768116 7514065.628545966,8140237.764258131 7592337.145509984))');
+        // wol.util.transform(maskFeature, 'EPSG:4326', 'EPSG:3857');
 
         var defaults = {
             name: undefined,
@@ -674,5 +674,20 @@
 
         targetArray.push(point2);
         return targetArray;
+    }
+
+    wol.util.createShadowFeature = function(lineFeature) {
+        var deltaS = 500;
+        var coords = lineFeature.getGeometry().getCoordinates();
+        var p1 = coords[0], p2 = coords[1];
+        var k = (p2[1] - p1[1]) / (p2[0] - p1[0]);
+        var tmpSqr1 = Math.sqrt(Math.pow(k, 2) - 1);
+
+        var newP1 = [p1[0] + (deltaS * k / tmpSqr1), p1[1] - (deltaS / tmpSqr1)],
+            newP2 = [p2[0] + (deltaS * k / tmpSqr1), p2[1] - (deltaS / tmpSqr1)];
+        console.info(newP1, newP2);
+        return new ol.Feature({
+            geometry: new ol.geom.LineString([newP1, newP2])
+        });
     }
 })(window);
