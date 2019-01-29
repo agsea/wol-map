@@ -676,8 +676,8 @@
         return targetArray;
     }
 
-    wol.util.createShadowFeature = function(lineFeature) {
-        var deltaS = 500;
+    wol.util.createShadowFeature = function(map, lineFeature) {
+        var deltaS = 1;
         var coords = lineFeature.getGeometry().getCoordinates();
         var p1 = coords[0], p2 = coords[1];
         var k = (p2[1] - p1[1]) / (p2[0] - p1[0]);
@@ -686,8 +686,23 @@
         var newP1 = [p1[0] + (deltaS * k / tmpSqr1), p1[1] - (deltaS / tmpSqr1)],
             newP2 = [p2[0] + (deltaS * k / tmpSqr1), p2[1] - (deltaS / tmpSqr1)];
         console.info(newP1, newP2);
-        return new ol.Feature({
+        var shadowFea = new ol.Feature({
             geometry: new ol.geom.LineString([newP1, newP2])
         });
+
+        var listenerKey;
+        var shadowStyle = new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: 'white',
+                width: 5
+            })
+        });
+        function animate(event) {
+            var vectorContext = event.vectorContext;
+            var flashGeom = shadowFea.getGeometry();
+            vectorContext.setStyle(shadowStyle);
+            vectorContext.drawGeometry(flashGeom);
+        }
+        listenerKey = map.on('postcompose', animate);
     }
 })(window);
