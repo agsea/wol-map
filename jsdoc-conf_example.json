@@ -17,7 +17,7 @@
         "outputSourcePath": true,               //是否输出源码路径
         "systemName": "WolMap",         //系统名称
         "footer": "",                           //页脚内容
-        "copyright": "http://www.womow.com.cn",	//页脚版权信息
+        "copyright": "https://github.com/agsea",	//页脚版权信息
         "navType": "vertical",                 	//vertical 或 inline
 		//良好选择：cosmo、paper、slate、spacelab
         "theme": "cosmo",						//docstrap 模板主题。可取值: cosmo, cyborg, flatly, journal, lumen, paper,readable, sandstone, simplex, slate, spacelab, superhero, united, yeti
