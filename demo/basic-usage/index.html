@@ -6,27 +6,51 @@
     <link rel='stylesheet' href='zTree/css/zTreeStyle/zTreeStyle.css'>
     <link rel="stylesheet" href="../../dist/wol-map-1.2.0.min.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
         body{
             background-color: lightgray;
         }
         #mapContainer{
             width: 100%;
-            height: 700px;
-            border: 1px solid grey;
+            height: 90vh;
+            border-bottom: 1px solid grey;
         }
         #mapTree{
-            width: 300px;
+            position: absolute;
+            width: 240px;
+            height: 280px;
+            overflow: auto;
+            top: 30px;
+            right: 30px;
+            background-color: white;
+            border: 1px solid #DCDFE6;
+            box-shadow: 5px 5px 5px 1px rgba(0, 0, 0, 0.25)
+        }
+        .layer-manager-container {
+            background-color: transparent;
+            border: none;
         }
         .my-drone{
             background-size: 70px !important;
             background-position: -10px -10px !important;
+        }
+        .btn-con {
+            padding: 15px 10px;
         }
     </style>
 </head>
 <body>
     <div id="mapContainer" class="map" ondragover="DragHandler.allowDrop(event)">
     </div>
-    <div>
+    <div class="btn-con">
         <button onclick="turnOn()">开灯</button>
         <button onclick="off()">关灯</button>
         <button onclick="removeLayer()">删除遮罩</button>
@@ -50,13 +74,19 @@
         <button onclick="addOneLayer()">添加图层</button>
         <button onclick="removeOneLayer()">移除图层</button>
     </div>
-    <div id="mapTree"></div>
+    <div class="hidden" id="mapTree"></div>
 
     <script src="jquery-3.2.0.min.js"></script>
     <script src='zTree/js/jquery.ztree.core.js'></script>
     <script src='zTree/js/jquery.ztree.excheck.js'></script>
     <script src="../../dist/wol-map-1.2.0.min.js"></script>
     <script>
+        var tempFea = wol.util.createFeatureFromWKT('LINESTRING(13071917.805032125 4739913.271585008,13071990.061910426 4739869.678592314)');
+        wol.util.transform(tempFea, 'EPSG:3857', 'EPSG:4326');
+        var tempWkt = wol.util.createWKTFromFeature(tempFea);
+        console.info(tempWkt);
+
+
         //点、线、面
         var point = wol.util.createFeatureFromWKT('POINT(13059385.715379057 4734320.828070238)');
         var point2 = wol.util.createFeatureFromWKT('POINT(13059082.355923051 4734194.22924214)');
@@ -64,19 +94,30 @@
         var line = wol.util.createFeatureFromWKT('LINESTRING(13059084.744580185 4734660.017383253,13059082.355923051 4734194.22924214,13059619.80377818 4734194.22924214)');
         var polygon = wol.util.createFeatureFromWKT('POLYGON((13059084.744580185 4734660.017383253,13059082.355923051 4734194.22924214,13059619.80377818 4734194.22924214,13059586.362578306 4734650.462754718,13059084.744580185 4734660.017383253))');
 
+        var power1 = wol.util.createFeatureFromWKT('POINT(117.401676642893 39.0021426013095))');
+        var power2 = wol.util.createFeatureFromWKT('POINT(117.442361124606 38.9937750471075))');
+        var powerLine = wol.util.createFeatureFromWKT('LINESTRING(117.401676642893 39.0021426013095,117.404167611933 39.0017903975037,117.406902861532 39.0016162655201,117.409461578942 39.001459727079,117.411246757159 38.9998550481807,117.412508937069 38.9984958301376,117.41398000707 38.9969450750432,117.414863925418 38.9959365993284,117.416244898455 38.9944488867469,117.418016543311 38.9925282331957,117.41820158251 38.9902380519223,117.421162373245 38.9898426408388,117.421387400158 38.9883804021347,117.42148802092 38.9872251214264,117.422147197573 38.9857254745649,117.4227360278 38.984467755635,117.424924310837 38.984046923202,117.42541508221 38.985436019328,117.42660968277 38.9856798429841,117.427773516305 38.9864544187053,117.428613668916 38.986777371245,117.437036374465 38.9893242447421,117.436722307185 38.9920886197919,117.436968867023 38.9933783743997,117.439593300766 38.9935832483334,117.442361124606 38.9937750471075)');
+        wol.util.transform(power1, 'EPSG:4326', 'EPSG:3857');
+        wol.util.transform(power2, 'EPSG:4326', 'EPSG:3857');
+        wol.util.transform(powerLine, 'EPSG:4326', 'EPSG:3857');
+
+        var pointEq = wol.util.createFeatureFromWKT('POINT(117.428049205342 39.0104528920549)');
+        wol.util.transform(pointEq, 'EPSG:4326', 'EPSG:3857');
+
         //添加聚合要素
         var styleCache = {};
         var mapViewer = new wol.MapViewer('mapContainer', {
-            zoom: 14,
+            zoom: 12,
+            center: ol.proj.transform([109.921169, 29.702163], 'EPSG:4326', 'EPSG:3857'),
             layers: [
-                {
+                /*{
                     type: 'XYZ',
                     name: 'baseLayer',
                     label: '电子底图',
                     url: 'https://webrd03.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
                     zIndex: 0,
                     group: '基本图层'
-                },
+                },*/
                 /*{
                     type: 'XYZ',
                     name: 'baseLayerWx',
@@ -94,6 +135,16 @@
                     group: '基本图层'
                 },*/
                 {
+                    type: 'XYZ',
+                    name: 'baseLayer1',
+                    label: '电子底图1',
+                    // url: 'http://localhost:6060/t/{z}/{y}/{x}',
+                    url: 'http://www.imageye.cn/tile/t/{z}/{y}/{x}',
+                    zIndex: 0,
+                    group: '基本图层'
+                },
+
+                {
                     type: 'Mask',
                     name: 'maskLayer',
                     label: '遮罩',
@@ -104,17 +155,51 @@
                     name: 'testLayer',
                     label: '东丽茶庄',
                     group: '东丽区',
-                    features: [point, line, polygon]
+                    // features: [point, line, polygon, power1, power2, powerLine],
+                    features: [pointEq],
                 },
                 {
                     type: 'Cluster',
                     name: 'defectLayer',
                     label: '缺陷图层',
-                    features: [point, point2, point3],
-                },
+                    // features: [point, point2, point3],
+                }
             ]
         });
         //console.info(mapViewer.getLayerByName('defectLayer').get('label'));
+        var googleLayer = new ol.layer.Tile({
+            source:new ol.source.XYZ({
+                projection: 'EPSG:3857',
+                url: 'http://localhost:8090/tile/t/{z}/{x}/{y}?t=3'
+            }),
+            opacity: 1,
+            name: 'googleLayer',
+            label: '谷歌电子地图',
+        });
+        var googleLayerWx = new ol.layer.Tile({
+            source:new ol.source.XYZ({
+                projection: 'EPSG:3857',
+                url: 'http://localhost:8090/tile/t/{z}/{x}/{y}?t=4'
+                // 我把地图命名为tile_new放在Jboss的war包下，请注意找正确图片路径以免加载不出来
+            }),
+            opacity: 0.5,
+            name: 'googleLayerWx',
+            label: '谷歌卫星地图',
+        });
+        var googleLayerHl = new ol.layer.Tile({
+            source:new ol.source.XYZ({
+                projection: 'EPSG:3857',
+                url: 'http://localhost:8090/tile/t/{z}/{y}/{x}?t=5'
+                // 我把地图命名为tile_new放在Jboss的war包下，请注意找正确图片路径以免加载不出来
+            }),
+            opacity: 0.5,
+            name: 'googleLayerHl',
+            label: '高程图',
+        });
+        // mapViewer.addLayer(googleLayer);
+        // mapViewer.addLayer(googleLayerHl);
+        // mapViewer.addLayer(googleLayerWx);
+
 
         function turnOn() {
             mapViewer.getLayerByName('maskLayer').setVisible(false);
@@ -195,7 +280,7 @@
                 console.info('轨迹播放结束 ^_^');
             },
             ifDynamicTrack: false,
-            ifLocate: true,
+            ifLocate: false,
 //            icon: 'tracer-car.png',   //轨迹播放图标
             iconClass: 'my-drone',  //图标样式
             iconSize: 50,   //图标大小
@@ -234,6 +319,7 @@
                 target: 'mapTree',
                 exclude: ['locateLayer']
             });
+            $('#mapTree').removeClass('hidden');
         }
 
         var layer1 = wol.util.createVectorLayer({

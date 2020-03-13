@@ -240,7 +240,12 @@
             //self.getLocateSource().addFeature(locateFea);
         }
 
-        if(times > 0) {
+        if(times === -1) {
+            setInterval(function() {
+                self[locateFun](locateFea, duration);
+            }, duration);
+            self[locateFun](locateFea, duration);
+        }else if(times > 0) {
             var elapseTimes = 0;
             var timer = setInterval(function() {
                 elapseTimes++;
