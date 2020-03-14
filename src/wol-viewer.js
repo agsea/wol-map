@@ -240,11 +240,20 @@
      * 缩放视图至指定范围
      * @param {ol.Extent|ol.geom.Geometry} target - 目标视图范围
      * @param {number} duration - 动画持续时间，可选参数，默认为0
+     * @param {number | Array} padding - 目标视图周围间距
      */
-    wol.MapViewer.prototype.extentAt = function(target, duration) {
+    wol.MapViewer.prototype.extentAt = function(target, duration, padding) {
+        var tarPadding;
+        if(padding instanceof Array && padding.length === 4) {
+            tarPadding = padding;
+        }else if(!isNaN(padding)) {
+            tarPadding = [padding, padding, padding, padding];
+        }else {
+            tarPadding = [50, 50, 50, 50];
+        }
         this.getView().fit(target, {
             size: this.getMap().getSize(),
-            padding: [50, 50, 50, 50],
+            padding: tarPadding,
             duration: duration
         });
     }

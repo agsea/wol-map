@@ -416,7 +416,7 @@
      * @param {ol.proj.ProjectionLike} to - 转换后投影坐标系
      */
     wol.util.transform = function(feature, from, to) {
-        feature.getGeometry().transform(from, to);feature.getGeometry().transform(from, to);
+        feature.getGeometry().transform(from, to);
     }
 
     /**
